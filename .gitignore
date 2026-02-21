@@ -1,0 +1,46 @@
+# --- Unity Folders to Ignore ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]nityGenerated/
+MemoryCaptures/
+
+# --- Asset Store Packages ---
+# It's usually better to ignore these and redownload them, 
+# but keep them if you've modified the source code.
+/[Aa]ssets/AssetStoreTools*
+
+# --- VS Code & IDE Files ---
+# Unity regenerates these, so they just bloat your git history
+.vscode/
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+# --- macOS Files ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# --- OS Specific ---
+Thumbs.db
+desktop.ini
