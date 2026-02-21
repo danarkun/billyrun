@@ -44,6 +44,7 @@ namespace Platformer.Mechanics
             var ev = Schedule<PlayerBoneCollision>();
             ev.bone = this;
             ev.player = player;
+            player.CollectToken(1);
         }
     }
 }

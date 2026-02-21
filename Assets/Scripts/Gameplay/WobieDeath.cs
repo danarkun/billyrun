@@ -16,6 +16,7 @@ namespace Platformer.Gameplay
             enemy._collider.enabled = false;
             if (enemy._audio && enemy.ouch)
                 enemy._audio.PlayOneShot(enemy.ouch);
+            enemy.gameObject.SetActive(false);
         }
     }
 }

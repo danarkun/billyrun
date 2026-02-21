@@ -6,6 +6,7 @@ using static Platformer.Core.Simulation;
 using Platformer.Model;
 using Platformer.Core;
 using UnityEngine.InputSystem;
+using System;
 
 namespace Platformer.Mechanics
 {
@@ -45,6 +46,10 @@ namespace Platformer.Mechanics
         private InputAction m_JumpAction;
 
         public Bounds Bounds => collider2d.bounds;
+
+        public int currentTokens = 0;
+
+        public BoneBarController uiController;
 
         void Awake()
         {
@@ -110,6 +115,15 @@ namespace Platformer.Mechanics
                     jumpState = JumpState.Grounded;
                     break;
             }
+        }
+
+        public void CollectToken(int amount)
+        {
+            currentTokens += amount;
+            currentTokens = Mathf.Clamp(currentTokens, 0, 75);
+
+            if (uiController != null)
+                uiController.UpdateTokenBar(currentTokens, 75);
         }
 
         protected override void ComputeVelocity()
