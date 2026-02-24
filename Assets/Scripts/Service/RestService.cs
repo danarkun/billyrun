@@ -38,7 +38,7 @@ public class RestService : IRestService
         // Wait for request to finish without blocking the main thread
         while (!operation.isDone)
         {
-            await Task.Yield(); 
+            await Task.Yield();
         }
 
         if (request.result != UnityWebRequest.Result.Success)
