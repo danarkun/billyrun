@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using UnityEngine;
@@ -8,7 +9,7 @@ public class ChatService
     private HubConnection _connection;
 
     public event Action<string, string> OnMessageReceived;
-
+    private readonly ConcurrentQueue<string> _mainThreadQueue = new ConcurrentQueue<string>();
     public ChatService(string url)
     {
         _connection = new HubConnectionBuilder()
@@ -16,11 +17,19 @@ public class ChatService
             .WithAutomaticReconnect()
             .Build();
 
-        // Listen for messages from the server
         _connection.On<string, string>("ReceiveMessage", (user, message) =>
         {
-            OnMessageReceived?.Invoke(user, message);
+            _mainThreadQueue.Enqueue($"{user}: {message}");
         });
+    }
+    
+    // This method will be called by your ChatUI's Update()
+    public void CheckForMessages(System.Action<string> onMessageReceived)
+    {
+        while (_mainThreadQueue.TryDequeue(out var message))
+        {
+            onMessageReceived?.Invoke(message);
+        }
     }
 
     public async Task Connect()

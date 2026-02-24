@@ -11,6 +11,7 @@ public class ChatUI : MonoBehaviour
     [SerializeField] private Button sendButton;
     [SerializeField] private Transform messageContainer; // The "Content" object
     [SerializeField] private GameObject messagePrefab;
+    public TextMeshProUGUI chatDisplayText;
 
     private ChatService _chatService;
     private string _username = "Player1";
@@ -24,6 +25,20 @@ public class ChatUI : MonoBehaviour
         sendButton.onClick.AddListener(OnSendClicked);
         
         await _chatService.Connect();
+    }
+
+    void Update()
+    {
+        // 2. Check for new messages from the SignalR thread
+        if (_chatService != null)
+        {
+            _chatService.CheckForMessages((fullMessage) => 
+            {
+                // This now safely runs on the Main Thread!
+                chatDisplayText.text += "\n" + fullMessage;
+                Debug.Log("UI Updated with: " + fullMessage);
+            });
+        }
     }
 // The InputField passes the current text automatically to this event
     public void OnInputSubmit(string outputText)
