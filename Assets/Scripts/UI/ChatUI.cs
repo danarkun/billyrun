@@ -18,6 +18,9 @@ public class ChatUI : MonoBehaviour
 
     async void Start()
     {
+        Debug.Log(">>> ChatUI Start is running!");
+        // This will print to your browser console every 5 seconds
+        InvokeRepeating(nameof(Heartbeat), 1f, 5f);
         _chatService = new ChatService("http://localhost:5000/chatHub");
         // _chatService = new ChatService("https://localhost:5001/chatHub");
         _chatService.OnMessageReceived += HandleNewMessage;
@@ -103,5 +106,10 @@ public class ChatUI : MonoBehaviour
         yield return new WaitForEndOfFrame();
         var scrollRect = GetComponentInChildren<ScrollRect>();
         scrollRect.verticalNormalizedPosition = 0f; // 0 is the bottom
+    }
+
+    void Heartbeat() 
+    {
+        Debug.Log(">>> WebGL Engine Heartbeat: " + Time.time);
     }
 }
