@@ -1,0 +1,4 @@
+{
+    "ApiBaseUrl": "https://localhost:5432/api",
+    "ChatHubUrl": "https://localhost:5432/chatHub"
+}

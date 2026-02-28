@@ -1,0 +1,101 @@
+name: Deploy Unity WebGL to Azure SWA
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - prod
+
+jobs:
+  build:
+    name: Build Unity WebGL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-WebGL-
+
+      - name: Unity Builder
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          buildMethod: BuildScript.BuildWebGL
+          customParameters: -batchmode -nographics
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebGL-Build
+          path: Build/WebGL
+
+  deploy:
+    name: Deploy to Azure SWA
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'test' || 'test') }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: WebGL-Build
+          path: Build/WebGL
+
+      - name: Inject Configuration
+        run: |
+          CONFIG_FILE="Build/WebGL/StreamingAssets/config.json"
+          if [ -f "$CONFIG_FILE" ]; then
+            echo "Updating $CONFIG_FILE"
+            # Use environment variables if they exist, otherwise keep defaults
+            API_URL="${{ vars.BACKEND_API_URL || 'https://localhost:5432/api' }}"
+            CHAT_URL="${{ vars.BACKEND_CHAT_URL || 'https://localhost:5432/chatHub' }}"
+            
+            # Simple replacement using sed or jq if available. Using python for reliability in ubuntu-latest
+            python3 -c "
+            import json
+            import os
+            with open('$CONFIG_FILE', 'r+') as f:
+                data = json.load(f)
+                data['ApiBaseUrl'] = '$API_URL'
+                data['ChatHubUrl'] = '$CHAT_URL'
+                f.seek(0)
+                json.dump(data, f, indent=4)
+                f.truncate()
+            "
+          else
+            echo "Warning: $CONFIG_FILE not found"
+          fi
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: 'Build/WebGL'
+          api_location: ''
+          output_location: ''

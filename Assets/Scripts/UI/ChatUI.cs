@@ -19,10 +19,16 @@ public class ChatUI : MonoBehaviour
     async void Start()
     {
         Debug.Log(">>> ChatUI Start is running!");
-        // This will print to your browser console every 5 seconds
         InvokeRepeating(nameof(Heartbeat), 1f, 5f);
-        _chatService = new ChatService("http://localhost:5000/chatHub");
-        // _chatService = new ChatService("https://localhost:5001/chatHub");
+        
+        var config = await ConfigLoader.GetConfig();
+        if (config == null)
+        {
+            Debug.LogError("ChatUI: Config failed to load.");
+            return;
+        }
+
+        _chatService = new ChatService(config.ChatHubUrl);
         _chatService.OnMessageReceived += HandleNewMessage;
 
         sendButton.onClick.AddListener(OnSendClicked);

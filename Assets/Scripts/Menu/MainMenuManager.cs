@@ -6,15 +6,23 @@ public class MainMenuManager : MonoBehaviour
 {
     
     private IRestService _restService;
-    private string backendUrl = "https://localhost:5001/api";
 
-    void Awake()
+    async void Start()
     {
-        _restService = new RestService(backendUrl);
+        var config = await ConfigLoader.GetConfig();
+        if (config != null)
+        {
+            _restService = new RestService(config.ApiBaseUrl);
+        }
     }
 
     public async void SaveGame()
     {
+        if (_restService == null)
+        {
+            Debug.LogError("RestService not initialized. Config might still be loading.");
+            return;
+        }
         bool success = await _restService.SavePlayerProfile("Unity_Tester_01", 100);
         
         if (success)
