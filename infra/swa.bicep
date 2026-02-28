@@ -30,3 +30,4 @@ resource customDomain 'Microsoft.Web/staticSites/customDomains@2022-03-01' = if 
 
 output staticWebAppId string = swa.id
 output defaultHostname string = swa.properties.defaultHostname
+output deploymentToken string = swa.listSecrets().properties.apiKey
