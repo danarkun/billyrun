@@ -1,6 +1,6 @@
 using 'main.bicep'
 
-param name = 'billyrun-test'
+param environmentName = 'test'
 param location = 'eastus2'
 param sku = 'Free'
 param repositoryUrl = 'https://github.com/danarkun/billyrun'

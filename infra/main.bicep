@@ -1,32 +1,31 @@
-param name string
+targetScope = 'subscription'
+
+param environmentName string
 param location string = 'eastus2'
 param sku string = 'Free'
 param repositoryUrl string
 param branch string
 param customDomainName string = ''
 
-resource swa 'Microsoft.Web/staticSites@2022-03-01' = {
-  name: name
+var resourceGroupName = 'rg-${environmentName}'
+
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: resourceGroupName
   location: location
-  sku: {
-    name: sku
-    tier: sku
-  }
-  properties: {
+}
+
+module swa './swa.bicep' = {
+  name: 'swa-deployment'
+  scope: rg
+  params: {
+    name: 'swa-${environmentName}'
+    location: location
+    sku: sku
     repositoryUrl: repositoryUrl
     branch: branch
-    provider: 'GitHub'
-    stagingEnvironmentPolicy: 'Enabled'
-    allowConfigFileUpdates: true
+    customDomainName: customDomainName
   }
 }
 
-// Custom domain configuration
-resource customDomain 'Microsoft.Web/staticSites/customDomains@2022-03-01' = if (!empty(customDomainName)) {
-  parent: swa
-  name: customDomainName
-  properties: {}
-}
-
-output staticWebAppId string = swa.id
-output defaultHostname string = swa.properties.defaultHostname
+output staticWebAppId string = swa.outputs.staticWebAppId
+output defaultHostname string = swa.outputs.defaultHostname
